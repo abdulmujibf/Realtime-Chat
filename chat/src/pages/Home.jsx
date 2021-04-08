@@ -12,9 +12,21 @@ function Home () {
   const dispatch = useDispatch()
   const chat = useSelector(state => state.chat)
   const [name, setName] = useState('')
+  const [people, setPeople] = useState([])
+  // const [isOnline, setIsOnline] = useState(true)
+
   useEffect(() => {
-    setName(localStorage.name)
-  })
+    const name = localStorage.name
+    const id = +localStorage.id
+    socket.emit('setPeople', {name: localStorage.name, id, isOnline: true})
+    setName(name)
+  }, [])
+
+  useEffect(() => {
+    socket.on('people', person => {
+      setPeople(person)
+    })
+  }, [])
 
   useEffect(() => {
     if(!chat.length){
@@ -34,24 +46,42 @@ function Home () {
     e.preventDefault()
     socket.emit('chat', {message, name})
     setMessage('')
-    // dispatch({type: 'SETMESSAGE', payload: {message, name}})
   }
 
   useEffect(() => {
     socket.on('SendChat', (payload) => {
       dispatch({type: 'SETMESSAGE', payload})
     })
+
   }, [])
 
-  const back = () => {
-    localStorage.removeItem('name')
-    socket.disconnect()
-  }
+  useEffect(() => {
+    if(socket.disconnected){
+      socket.on('offline', () => {
+        socket.emit('offline', {name})
+      })
+    } else {
+      socket.emit('setPeople', {name: localStorage.name, id: +localStorage.id, isOnline: true})
+    }
+  }, [socket.disconnected])
+
+  console.log(people)
 
   return (
-    <div>
-      <NavLink to="/landing" onClick={back} className="btn btn-outline-dark m-3">Back</NavLink>
-      <div className="container d-flex flex-column align-items-center cont-chat">
+    <div className="d-flex">
+      <div className="d-flex flex-column align-items-center">
+        {
+          people.map(el => {
+            return (
+              <div className="d-flex flex-column people ms-3 align-items-center">
+                <img src={`https://avatars.dicebear.com/api/human/${el.name}.svg`} className="mt-4 img-people rounded-circle border" />
+                <span>{el.name}</span>
+              </div>
+            )
+          })
+        }
+      </div>
+      <div className="container d-flex flex-column align-items-center cont-chat mt-4">
         <ContainerChat chat={chat} />
         <div className="position-relative w-100 h-100">
           <form onSubmit={sendMessage} className="position-absolute bottom-0 w-100">

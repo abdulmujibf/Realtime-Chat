@@ -1,15 +1,18 @@
-import {useState} from 'react'
+import {useEffect, useState} from 'react'
 import {useHistory} from 'react-router-dom'
 import './style.css'
 
 function Landing () {
   const [name, setName] = useState('')
   const history = useHistory()
+
   const roomIn = (e) => {
     e.preventDefault()
     history.push('/')
     localStorage.setItem('name', name)
+    localStorage.setItem('id', new Date().getTime())
   }
+
   return (
     <>
       <h1 className="my-5 text-center">Welcome To Chat App</h1>

@@ -13,19 +13,42 @@ const io = require('socket.io')(http, {
 });
 
 const messages = []
+const people = []
 
 io.on('connection', (socket) => {
   console.log('connected')
+
+  socket.on('setPeople', person => {
+    const unRegistered = people.find(aPerson => aPerson.name === person.name)
+    if(!unRegistered){
+      people.push(person)
+    }
+    people.forEach(el => {
+      el.isOnline = true
+    })
+    io.emit('people', people)
+  })
   socket.on('setMessages', () => {
-    console.log('masuk')
     socket.emit('messages', messages)
   })
   socket.on('chat', (message) => {
     messages.push(message)
     io.emit('SendChat', message)
   })
+  socket.on('offline', () => {
+    // people.forEach(person => {
+    //   if(person.name === payload.name){
+    //     person.isOnline = false
+    //   }
+    // })
+    // console.log(people)
+    // var i = people.indexOf(socket);
+    // people.splice(i, 1);
+    // io.emit('people', people)
+  })
   socket.on('disconnect', () => {
     console.log('disconnected');
+    io.emit('offline')
   });
 })
 
