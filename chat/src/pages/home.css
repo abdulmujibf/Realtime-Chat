@@ -1,0 +1,10 @@
+.cont-chat {
+  height: 80vh;
+}
+
+.chat {
+  width: 100%;
+  min-height: 430px;
+  overflow-y: auto;
+  overflow-wrap: break-word;
+}
