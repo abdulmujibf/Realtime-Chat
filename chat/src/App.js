@@ -1,22 +1,28 @@
 import './App.css';
 import Home from './pages/Home';
 import Landing from './pages/Landing'
-import {Route, Switch, useLocation} from 'react-router-dom'
-import { useEffect } from 'react';
+import {Switch} from 'react-router-dom'
+import { GuardProvider, GuardedRoute } from 'react-router-guards';
+
+const auth = (to, from, next) => {
+  if(from.location.pathname === '/' && !localStorage.name){
+    next.redirect('/landing')
+  } else if(from.location.pathname === '/landing' && localStorage.name) {
+    next.redirect('/')
+  } else {
+    next()
+  }
+}
 
 function App() {
-  const location = useLocation()
 
-  console.log(location)
   return (
-    <Switch>
-      <Route path="/landing">
-        <Landing />
-      </Route>
-      <Route path="/">
-        <Home />
-      </Route>
-    </Switch>
+    <GuardProvider guards={auth}>
+      <Switch>
+        <GuardedRoute path="/landing" component={Landing} />
+        <GuardedRoute path="/" exact component={Home} />
+      </Switch>
+    </GuardProvider>
   );
 }
 

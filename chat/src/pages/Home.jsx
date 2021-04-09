@@ -2,7 +2,6 @@ import {useEffect, useState} from 'react'
 import io from "socket.io-client";
 import { useDispatch, useSelector } from 'react-redux'
 import './home.css'
-import { NavLink } from 'react-router-dom';
 import ContainerChat from '../components/ContainerChat';
 const baseUrl = 'http://localhost:3001'
 const socket = io(baseUrl)
@@ -13,69 +12,59 @@ function Home () {
   const chat = useSelector(state => state.chat)
   const [name, setName] = useState('')
   const [people, setPeople] = useState([])
-  // const [isOnline, setIsOnline] = useState(true)
 
-  useEffect(() => {
+  useEffect(() => {   // initialize user
     const name = localStorage.name
     const id = +localStorage.id
     socket.emit('setPeople', {name: localStorage.name, id, isOnline: true})
     setName(name)
   }, [])
 
-  useEffect(() => {
+  useEffect(() => {   // Get Current People
     socket.on('people', person => {
       setPeople(person)
     })
   }, [])
 
-  useEffect(() => {
+  useEffect(() => {   // Send request History Messages
     if(!chat.length){
       socket.emit('setMessages')
     }
-  }, [])
+  }, [chat.length])
 
-  useEffect(() => {
+  useEffect(() => {   // Get History Messages
     if(!chat.length){
       socket.on('messages', msg => {
         dispatch({type: 'SETMESSAGES', payload: msg})
       })
     }
-  }, [])
+  }, [chat.length, dispatch])
 
-  const sendMessage = (e) => {
+  const sendMessage = (e) => {    // Send Messages To server
     e.preventDefault()
-    socket.emit('chat', {message, name})
-    setMessage('')
+    if(message){
+      socket.emit('chat', {message, name})
+      setMessage('')
+    }
   }
 
-  useEffect(() => {
+  useEffect(() => {               // Get Messages From Server
     socket.on('SendChat', (payload) => {
       dispatch({type: 'SETMESSAGE', payload})
     })
 
-  }, [])
-
-  useEffect(() => {
-    if(socket.disconnected){
-      socket.on('offline', () => {
-        socket.emit('offline', {name})
-      })
-    } else {
-      socket.emit('setPeople', {name: localStorage.name, id: +localStorage.id, isOnline: true})
-    }
-  }, [socket.disconnected])
-
-  console.log(people)
+  }, [dispatch])
 
   return (
-    <div className="d-flex">
-      <div className="d-flex flex-column align-items-center">
+    <div className="d-flex mx-2">
+      <div className="d-flex flex-column align-items-center darkgray mt-4 rounded p-2 container-people">
+        <h4>People</h4>
         {
-          people.map(el => {
+          people.map((el, index) => {
             return (
-              <div className="d-flex flex-column people ms-3 align-items-center">
-                <img src={`https://avatars.dicebear.com/api/human/${el.name}.svg`} className="mt-4 img-people rounded-circle border" />
-                <span>{el.name}</span>
+              <div className="d-flex flex-column people align-items-center" key={index}>
+                <img src={`https://avatars.dicebear.com/api/human/${el.name}.svg`} className="mt-3 img-people rounded-circle border" alt={el.name} />
+                <span className={localStorage.name === el.name ? 'text-light fw-bold' : 'fw-bold'}>{el.name === localStorage.name ? `${el.name} (You)` : el.name}</span>
               </div>
             )
           })

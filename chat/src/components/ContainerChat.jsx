@@ -1,6 +1,22 @@
+import '../pages/home.css'
+import {useRef, useEffect} from 'react'
+
 function ContainerChat ({chat}) {
+  const containerRef = useRef(null);
+
+  useEffect(() => {           // For Auto Scroll if Have New Messages
+    if(containerRef && containerRef.current) {
+      const element = containerRef.current;
+      element.scroll({
+        top: element.scrollHeight,
+        left: 0,
+        behavior: "smooth"
+      })
+    }
+  }, [containerRef, chat])
+
   return (
-    <div className="chat bg-success rounded">
+    <div className="chat rounded" ref={containerRef}>
       {
         chat.map((el, index) => {
           return (

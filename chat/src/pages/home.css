@@ -7,4 +7,14 @@
   min-height: 500px;
   overflow-y: auto;
   overflow-wrap: break-word;
+  background-color: darkgray;
+}
+
+.darkgray {
+  background-color: darkgray;
+}
+
+.container-people {
+  height: 500px;
+  overflow-y: auto;
 }
